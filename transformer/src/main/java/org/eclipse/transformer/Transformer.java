@@ -489,6 +489,12 @@ public class Transformer {
     private String[] args;
     private CommandLine parsedArgs;
 
+    private boolean hasChanges;
+
+    public boolean hasChanges() {
+        return hasChanges;
+    }
+
     /**
      * Set default resource references for the several 'RULE" options.
      * 
@@ -1396,6 +1402,13 @@ public class Transformer {
                 acceptedAction.getLastActiveChanges().display( getLogger(), inputPath, outputPath );
             }
         }
+        
+        public boolean hasChanges() {
+            if (acceptedAction != null) {
+                return acceptedAction.getLastActiveChanges().hasChanges();
+            }
+            return false;
+        }
     }
 
     public int run() {
@@ -1458,6 +1471,7 @@ public class Transformer {
 
         try {
             options.transform(); // throws JakartaTransformException
+            hasChanges = options.hasChanges();
         } catch ( TransformException e ) {
             dual_error("Transform failure:", e);
             return TRANSFORM_ERROR_RC;
