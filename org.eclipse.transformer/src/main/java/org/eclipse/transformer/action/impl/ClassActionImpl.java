@@ -430,7 +430,7 @@ public class ClassActionImpl extends ActionImpl {
 		MutableConstantPool constants = classBuilder.constant_pool();
 		debug("  Constant pool: {}", constants.size()); 
 
-		int modifiedConstants = transform(constants);
+            int modifiedConstants = transform(constants, inputName);
 		if ( modifiedConstants > 0 ) {
 			setModifiedConstants(modifiedConstants);
 		}
@@ -1021,7 +1021,11 @@ public class ClassActionImpl extends ActionImpl {
 
 			return outputElementValues;
 
-		} else {
+                } else {
+                    if (inputValue instanceof String) {
+                        String str = (String) inputValue;
+                        return transformDirectString(str);
+                    } else
 			return null;
 		}
 	}
@@ -1045,9 +1049,9 @@ public class ClassActionImpl extends ActionImpl {
 		return outputVtis;
 	}
 
-	private VerificationTypeInfo transform(VerificationTypeInfo vti) {
-		if ( !(vti instanceof ObjectVariableInfo) ) {
-			return null;
+    private VerificationTypeInfo transform(VerificationTypeInfo vti) {
+        if (!(vti instanceof ObjectVariableInfo)) {
+            return null;
 		}
 		ObjectVariableInfo inputOvi = (ObjectVariableInfo) vti;
 
@@ -1066,7 +1070,7 @@ public class ClassActionImpl extends ActionImpl {
 
 	//
 
-	private int transform(MutableConstantPool constants) throws TransformException {
+    private int transform(MutableConstantPool constants, String clazzName) throws TransformException {
 		int modifiedConstants = 0;
 
 		int numConstants = constants.size();
@@ -1165,7 +1169,10 @@ public class ClassActionImpl extends ActionImpl {
                         outputString = transformConstantAsBinaryType(inputString, SignatureRule.ALLOW_SIMPLE_SUBSTITUTION);
                         if ( outputString == null ) {
                         	transformCase = "Direct";
-                        	outputString = transformDirectString(inputString);
+                            outputString = transformDirectString(inputString, clazzName);
+                            if (outputString == null) {
+                                outputString = transformDirectString(inputString);
+                            }
                         }
                     }
 					if ( outputString != null ) {

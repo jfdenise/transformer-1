@@ -25,15 +25,17 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
+import org.slf4j.Logger;
+
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
-import org.apache.commons.cli.Option.Builder;
 import org.apache.commons.cli.OptionGroup;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.apache.commons.cli.Option.Builder;
 import org.eclipse.transformer.TransformerLoggerFactory.LoggerProperty;
 import org.eclipse.transformer.action.ActionType;
 import org.eclipse.transformer.action.BundleData;
@@ -237,9 +239,9 @@ public class Transformer {
     public static final String USAGE_LONG_TAG = "--usage";
 
     public enum AppOption {
-        USAGE  ("u", "usage", "Display usage",
-            !OptionSettings.HAS_ARG, !OptionSettings.HAS_ARGS,
-            !OptionSettings.IS_REQUIRED, OptionSettings.NO_GROUP),
+        USAGE("u", "usage", "Display usage",
+                !OptionSettings.HAS_ARG, !OptionSettings.HAS_ARGS,
+                !OptionSettings.IS_REQUIRED, OptionSettings.NO_GROUP),
         HELP   ("h", "help", "Display help",
             !OptionSettings.HAS_ARG, !OptionSettings.HAS_ARGS,
             !OptionSettings.IS_REQUIRED, OptionSettings.NO_GROUP),
@@ -285,18 +287,19 @@ public class Transformer {
             !OptionSettings.IS_REQUIRED, OptionSettings.NO_GROUP),
         RULES_DIRECT("td", "direct", "Transformation direct string replacements",
             OptionSettings.HAS_ARG, !OptionSettings.HAS_ARGS,
-            !OptionSettings.IS_REQUIRED, OptionSettings.NO_GROUP),
-
+                !OptionSettings.IS_REQUIRED, OptionSettings.NO_GROUP),
         RULES_MASTER_TEXT("tf", "xml", "Map of filenames to property files",
-            OptionSettings.HAS_ARG, !OptionSettings.HAS_ARGS,
-            !OptionSettings.IS_REQUIRED, OptionSettings.NO_GROUP),
+                OptionSettings.HAS_ARG, !OptionSettings.HAS_ARGS,
+                !OptionSettings.IS_REQUIRED, OptionSettings.NO_GROUP),
+        //        RULES_MASTER_XML("tf", "xml", "Map of XML filenames to property files",
+        //            OptionSettings.HAS_ARG, !OptionSettings.HAS_ARGS,
+        //            !OptionSettings.IS_REQUIRED, OptionSettings.NO_GROUP),
 
-//        RULES_MASTER_XML("tf", "xml", "Map of XML filenames to property files",
-//            OptionSettings.HAS_ARG, !OptionSettings.HAS_ARGS,
-//            !OptionSettings.IS_REQUIRED, OptionSettings.NO_GROUP),
-
+        RULES_PER_CLASS_DIRECT("tcd", "per-class-direct", "Transformation per class direct string replacements",
+                OptionSettings.HAS_ARG, !OptionSettings.HAS_ARGS,
+                !OptionSettings.IS_REQUIRED, OptionSettings.NO_GROUP),
         INVERT("i", "invert", "Invert transformation rules",
-               !OptionSettings.HAS_ARG, !OptionSettings.HAS_ARGS,
+                !OptionSettings.HAS_ARG, !OptionSettings.HAS_ARGS,
                !OptionSettings.IS_REQUIRED, OptionSettings.NO_GROUP),
 
         FILE_TYPE("t", "type", "Input file type",
@@ -328,7 +331,7 @@ public class Transformer {
         public String getShortTag() {
             return getSettings().getShortTag();
         }
-
+        
         public String getLongTag() {
             return getSettings().getLongTag();
         }
@@ -391,7 +394,7 @@ public class Transformer {
             useProperties = Transformer.loadProperties(TRANSFORMER_BUILD_PROPERTIES);
         } catch ( IOException e ) {
             useProperties = new Properties();
-			this.error("Failed to load properties [ " + TRANSFORMER_BUILD_PROPERTIES + " ]", e);
+            this.error("Failed to load build properties [ " + TRANSFORMER_BUILD_PROPERTIES + " ]", e);
         }
         this.buildProperties = useProperties;
 
@@ -400,9 +403,8 @@ public class Transformer {
 
     //
 
-	private static final String[]	COPYRIGHT_LINES					= {
-         "Copyright (c) 2020 Contributors to the Eclipse Foundation",
-         "This program and the accompanying materials are made available under the",
+    private static final String[] COPYRIGHT_LINES = {
+        "Copyright (c) 2020 Contributors to the Eclipse Foundation",         "This program and the accompanying materials are made available under the",
          "terms of the Eclipse Public License 2.0 which is available at",
          "http://www.eclipse.org/legal/epl-2.0, or the Apache License, Version 2.0",
          "which is available at https://www.apache.org/licenses/LICENSE-2.0.",
@@ -410,9 +412,9 @@ public class Transformer {
          ""
     };
 
-	private static final String		SHORT_VERSION_PROPERTY_NAME		= "version";
+    private static final String SHORT_VERSION_PROPERTY_NAME = "version";
 
-	private static final String		TRANSFORMER_BUILD_PROPERTIES	= "META-INF/maven/org.eclipse.transformer/org.eclipse.transformer/pom.properties";
+    private static final String TRANSFORMER_BUILD_PROPERTIES = "META-INF/maven/org.eclipse.transformer/org.eclipse.transformer/pom.properties";
 
     private final Properties buildProperties;
 
@@ -422,7 +424,6 @@ public class Transformer {
 
     // TODO: Usual command line usage puts SysOut and SysErr together, which results
 	// in the properties writing out twice.
-
     private void preInitDisplay(String message) {
         PrintStream useSysOut = getSystemOut();
         // PrintStream useSysErr = getSystemErr();
@@ -442,9 +443,9 @@ public class Transformer {
     private void displayBuildProperties() {
         Properties useBuildProperties = getBuildProperties();
 
-        preInitDisplay( getClass().getName() );
+        preInitDisplay( getClass().getName() ); 
         preInitDisplay( "  Version [ " + useBuildProperties.getProperty(SHORT_VERSION_PROPERTY_NAME) + " ]" );
-        preInitDisplay( "" );
+        preInitDisplay("");
     }
 
     //
@@ -456,7 +457,7 @@ public class Transformer {
     }
 
     private final PrintStream sysErr;
-
+    
     protected PrintStream getSystemErr() {
         return sysErr;
     }
@@ -474,7 +475,7 @@ public class Transformer {
 
     public void outputPrint(String message, Object... parms) {
         systemPrint( getSystemOut(), message, parms );
-    }
+    }    
 
     //
 
@@ -498,7 +499,7 @@ public class Transformer {
 
     /**
      * Set default resource references for the several 'RULE" options.
-     *
+     * 
      * Values are located relative to the option loader class.
      *
      * @param optionLoader The class relative to which to load the default resources.
@@ -512,13 +513,13 @@ public class Transformer {
     public Class<?> getRuleLoader() {
         return ruleLoader;
     }
-
+    
     public Map<AppOption, String> getRuleDefaultRefs() {
         return ruleDefaultRefs;
     }
 
     public String getDefaultReference(AppOption appOption) {
-        Map<AppOption, String> useDefaultRefs = getRuleDefaultRefs();
+        Map<AppOption, String> useDefaultRefs = getRuleDefaultRefs();        
         return ( (useDefaultRefs == null) ? null : getRuleDefaultRefs().get(appOption) );
     }
 
@@ -544,7 +545,7 @@ public class Transformer {
         if ( useArgs != null ) {
             if ( useArgs.length > 0 ) {
                 return useArgs[0]; // First argument
-            }
+            } 
         }
         return null;
     }
@@ -554,7 +555,7 @@ public class Transformer {
         if ( useArgs != null ) {
             if ( useArgs.length > 1 ) {
                 return useArgs[1]; // Second argument
-            }
+            } 
         }
         return null;
     }
@@ -649,7 +650,7 @@ public class Transformer {
 
     /**
      * Load properties for the specified rule option.
-     *
+     * 
      * Answer an empty collection if the rule option was not provided.
      *
      * Options loading tries {@link #getOptionValue(AppOption)}, then
@@ -816,6 +817,7 @@ public class Transformer {
         public Map<String, BundleData> bundleUpdates;
         public Map<String, Map<String, String>> masterTextUpdates; // ( pattern -> ( initial -> final ) )
         public Map<String, String> directStrings;
+        public Map<String, Map<String, String>> perClazzDirectStrings;
 
         public CompositeActionImpl rootAction;
         public ActionImpl acceptedAction;
@@ -863,13 +865,13 @@ public class Transformer {
         public String getInputFileName() {
             return inputName;
         }
-
+        
         public String getOutputFileName() {
             return outputName;
         }
 
         private InputBufferImpl buffer;
-
+        
         protected InputBufferImpl getBuffer() {
             if ( buffer == null ) {
                 buffer = new InputBufferImpl();
@@ -884,6 +886,7 @@ public class Transformer {
             UTF8Properties updateProperties = loadProperties(AppOption.RULES_BUNDLES);
             UTF8Properties directProperties = loadProperties(AppOption.RULES_DIRECT);
             UTF8Properties textMasterProperties = loadProperties(AppOption.RULES_MASTER_TEXT);
+            UTF8Properties perClassDirectProperties = loadProperties(AppOption.RULES_PER_CLASS_DIRECT);
 
             invert = hasOption(AppOption.INVERT);
 
@@ -927,11 +930,11 @@ public class Transformer {
                 dual_info("Bundle identities will not be updated");
             }
 
-            if ( !textMasterProperties.isEmpty() ) {
+            if (!textMasterProperties.isEmpty()) {
                 String masterTextRef = getOptionValue(AppOption.RULES_MASTER_TEXT, DO_NORMALIZE);
 
                 Map<String, String> substitutionRefs =
-                    TransformProperties.convertPropertiesToMap(textMasterProperties); // throws IllegalArgumentException
+ TransformProperties.convertPropertiesToMap(textMasterProperties); // throws IllegalArgumentException
 
                 Map<String, Map<String, String>> masterUpdates = new HashMap<String, Map<String, String>>();
                 for ( Map.Entry<String, String> substitutionRefEntry : substitutionRefs.entrySet() ) {
@@ -939,11 +942,11 @@ public class Transformer {
                     String substitutionsRef = FileUtils.normalize( substitutionRefEntry.getValue() );
 
                     UTF8Properties substitutions;
-                    if ( masterTextRef == null ) {
+                    if (masterTextRef == null) {
                         substitutions = loadInternalProperties("Substitions matching [ " + simpleNameSelector + " ]", substitutionsRef);
                     } else {
                         String relativeSubstitutionsRef = relativize(substitutionsRef, masterTextRef);
-                        if ( !relativeSubstitutionsRef.equals(substitutionsRef) ) {
+                        if (!relativeSubstitutionsRef.equals(substitutionsRef)) {
                             dual_info(
                                 "Adjusted substition reference from [ %s ] to [ %s ]",
                                 substitutionsRef, relativeSubstitutionsRef);
@@ -963,6 +966,34 @@ public class Transformer {
                 dual_info("Text files will not be updated");
             }
 
+            if (!perClassDirectProperties.isEmpty()) {
+                String masterDirect = getOptionValue(AppOption.RULES_PER_CLASS_DIRECT, DO_NORMALIZE);
+
+                Map<String, String> substitutionRefs
+                        = TransformProperties.convertPropertiesToMap(perClassDirectProperties); // throws IllegalArgumentException
+
+                Map<String, Map<String, String>> masterUpdates = new HashMap<String, Map<String, String>>();
+                for (Map.Entry<String, String> substitutionRefEntry : substitutionRefs.entrySet()) {
+                    String classSelector = substitutionRefEntry.getKey();
+                    String substitutionsRef = FileUtils.normalize(substitutionRefEntry.getValue());
+
+                    UTF8Properties substitutions = new UTF8Properties();
+                    if (masterDirect == null) {
+                        substitutions = loadInternalProperties("Substitions matching [ " + classSelector + " ]", substitutionsRef);
+                    }
+                    Map<String, String> substitutionsMap
+                            = TransformProperties.convertPropertiesToMap(substitutions); // throws IllegalArgumentException
+                    masterUpdates.put(classSelector, substitutionsMap);
+                }
+
+                perClazzDirectStrings = masterUpdates;
+                dual_info("Per class direct mapping files is enabled");
+
+            } else {
+                perClazzDirectStrings = null;
+                dual_info("Per class direct mapping not be updated");
+            }
+
             if ( !directProperties.isEmpty() ) {
                 directStrings = TransformProperties.getDirectStrings(directProperties);
                 dual_info("Java direct string updates will be performed");
@@ -974,7 +1005,7 @@ public class Transformer {
             return validateRules(packageRenames, packageVersions);
         }
 
-        protected boolean validateRules(Map<String, String> renamesMap,
+        protected boolean validateRules(Map<String, String> renamesMap, 
                                         Map<String, String> versionsMap) {
 
             if ( (versionsMap == null) || versionsMap.isEmpty() ) {
@@ -1009,7 +1040,7 @@ public class Transformer {
 
             return true;
         }
-
+              
         protected String getRuleFileName(AppOption ruleOption) {
             String rulesFileName = getOptionValue(ruleOption, DO_NORMALIZE);
             if ( rulesFileName != null ) {
@@ -1096,12 +1127,12 @@ public class Transformer {
             }
 
             info("Text substitutions:");
-            if ( (masterTextUpdates == null) || masterTextUpdates.isEmpty() ) {
+            if ((masterTextUpdates == null) || masterTextUpdates.isEmpty()) {
                 info("  [ ** NONE ** ]");
             } else {
-                for ( Map.Entry<String, Map<String, String>> masterTextEntry : masterTextUpdates.entrySet() ) {
+                for (Map.Entry<String, Map<String, String>> masterTextEntry : masterTextUpdates.entrySet()) {
                     info("  Pattern [ " + masterTextEntry.getKey() + " ]");
-                    for ( Map.Entry<String, String> substitution : masterTextEntry.getValue().entrySet() ) {
+                    for (Map.Entry<String, String> substitution : masterTextEntry.getValue().entrySet()) {
                         info("    [ " + substitution.getKey() + " ]: [ " + substitution.getValue() + " ]");
                     }
                 }
@@ -1123,11 +1154,12 @@ public class Transformer {
             if ( signatureRules == null ) {
                 signatureRules =  new SignatureRuleImpl(
                     logger,
-                    packageRenames,
-                    packageVersions,
+                    packageRenames, 
+                    packageVersions, 
                     bundleUpdates,
-                    masterTextUpdates,
-                    directStrings);
+                        masterTextUpdates,
+                        directStrings,
+                        perClazzDirectStrings);
             }
             return signatureRules;
         }
@@ -1162,7 +1194,7 @@ public class Transformer {
 //      String inputFileName = getInputFileName();
 //      int indexOfLastSlash = inputFileName.lastIndexOf('/');
 //      if (indexOfLastSlash == -1 ) {
-//          return OUTPUT_PREFIX + inputFileName;
+//          return OUTPUT_PREFIX + inputFileName; 
 //      } else {
 //          return inputFileName.substring(0, indexOfLastSlash+1) + OUTPUT_PREFIX + inputFileName.substring(indexOfLastSlash+1);
 //      }
@@ -1180,8 +1212,8 @@ public class Transformer {
                 if ( indexOfLastSlash == -1 ) {
                     useOutputName = OUTPUT_PREFIX + inputName;
                 } else {
-                    String inputPrefix = inputName.substring( 0, indexOfLastSlash + 1 );
-                    String inputSuffix = inputName.substring( indexOfLastSlash + 1 );
+                    String inputPrefix = inputName.substring( 0, indexOfLastSlash + 1 ); 
+                    String inputSuffix = inputName.substring( indexOfLastSlash + 1 ); 
                     useOutputName = inputPrefix + OUTPUT_PREFIX + inputSuffix;
                 }
             }
@@ -1191,7 +1223,7 @@ public class Transformer {
 
             boolean putIntoDirectory = ( inputFile.isFile() && useOutputFile.isDirectory() );
 
-            if ( putIntoDirectory ) {
+            if ( putIntoDirectory ) { 
                 useOutputName = useOutputName + '/' + inputName;
                 if ( isVerbose ) {
                     dual_info("Output generated using input name and output directory [ %s ]", useOutputName);
@@ -1269,8 +1301,8 @@ public class Transformer {
                 PropertiesActionImpl propertiesAction
                         = useRootAction.addUsing(PropertiesActionImpl::new);
 
-                JarActionImpl jarAction =
-                    useRootAction.addUsing( JarActionImpl::new );
+                JarActionImpl jarAction
+                        =                    useRootAction.addUsing( JarActionImpl::new );
                 WarActionImpl warAction =
                     useRootAction.addUsing( WarActionImpl::new );
                 RarActionImpl rarAction =
@@ -1278,8 +1310,8 @@ public class Transformer {
                 EarActionImpl earAction =
                     useRootAction.addUsing( EarActionImpl::new );
 
-                TextActionImpl textAction =
-                    useRootAction.addUsing( TextActionImpl::new );
+                TextActionImpl textAction
+                        = useRootAction.addUsing(TextActionImpl::new);
 //              XmlActionImpl xmlAction =
 //                  useRootAction.addUsing( XmlActionImpl::new );
 
@@ -1403,7 +1435,7 @@ public class Transformer {
                 acceptedAction.getLastActiveChanges().display( getLogger(), inputPath, outputPath );
             }
         }
-
+        
         public Changes getLastActiveChanges() {
             if (acceptedAction != null) {
                 return acceptedAction.getLastActiveChanges();
@@ -1442,7 +1474,7 @@ public class Transformer {
         }
         detectLogFile();
 
-        if ( !options.setInput() ) {
+        if ( !options.setInput() ) { 
             return TRANSFORM_ERROR_RC;
         }
 

@@ -41,10 +41,20 @@ import aQute.bnd.signatures.TypeVariableSignature;
 
 public class SignatureRuleImpl implements SignatureRule {
 
+    public SignatureRuleImpl(
+            Logger logger,
+            Map<String, String> renames,
+            Map<String, String> versions,
+            Map<String, BundleData> bundleUpdates,
+            Map<String, Map<String, String>> masterXmlUpdates,
+            Map<String, String> directStrings) {
+        this(logger, renames, versions, bundleUpdates, masterXmlUpdates, directStrings, Collections.emptyMap());
+    }
 	public SignatureRuleImpl(Logger logger,
 
 		Map<String, String> renames, Map<String, String> versions, Map<String, BundleData> bundleUpdates,
-		Map<String, Map<String, String>> masterTextUpdates, Map<String, String> directStrings) {
+            Map<String, Map<String, String>> masterTextUpdates, Map<String, String> directStrings,
+            Map<String, Map<String, String>> perClazzDirect) {
 
 		this.logger = logger;
 
@@ -129,6 +139,14 @@ public class SignatureRuleImpl implements SignatureRule {
 		}
 		this.directStrings = useDirectStrings;
 
+            Map<String, Map<String, String>> perClassD;
+            if ((perClazzDirect == null) || perClazzDirect.isEmpty()) {
+                perClassD = Collections.emptyMap();
+            } else {
+                perClassD = new HashMap<>(perClazzDirect);
+            }
+            this.perClassDirectStrings = perClassD;
+
 		this.unchangedBinaryTypes = new HashSet<>();
 		this.changedBinaryTypes = new HashMap<>();
 
@@ -176,12 +194,33 @@ public class SignatureRuleImpl implements SignatureRule {
 	//
 
 	private final Map<String, String> directStrings;
-
+    private final Map<String, Map<String, String>> perClassDirectStrings;
 	@Override
 	public String getDirectString(String initialValue) {
 		return directStrings.get(initialValue);
 	}
 
+    @Override
+    public String getDirectString(String initialValue, String clazz) {
+        Map<String, String> m = perClassDirectStrings.get(clazz);
+        if (m != null) {
+            System.out.println("STRING TO TRANSFORM " + initialValue);
+            String full = m.get(initialValue);
+            if (full != null) {
+                System.out.println("TXT:[" + clazz + "]" + initialValue + "=>" + full);
+
+                return full;
+            }
+            for (String k : m.keySet()) {
+                if (initialValue.contains(k)) {
+                    full = initialValue.replace(k, m.get(k));
+                    System.out.println("PIECE TXT:[" + clazz + "]" + initialValue + "=>" + full);
+                    return full;
+                }
+            }
+        }
+        return null;
+    }
 	//
 
 	// Package rename: "javax.servlet.Servlet"
